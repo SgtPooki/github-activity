@@ -1,0 +1,19 @@
+{
+  "name": "github-activity",
+  "version": "1.0.0",
+  "description": "",
+  "main": "activity.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@octokit/core": "^6.0.1",
+    "@octokit/plugin-retry": "^7.0.3",
+    "@octokit/plugin-throttling": "^9.0.3",
+    "@octokit/rest": "^20.0.2"
+  }
+}
