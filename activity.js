@@ -89,7 +89,7 @@ function collectUniqueURLs (activity) {
 }
 
 function generateDailyActivityReport (username, activity, uniqueURLs) {
-  let report = `Activity Report for ${username}:\n`
+  let report = ''
   if (activity.length === 0) {
     report += 'No activity found in the given timeframe.'
   } else {
@@ -124,6 +124,8 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
     })
 
     // Generate report
+    const earliestTime = new Date(activity[activity.length - 1].created_at).toUTCString()
+    const latestTime = new Date(activity[0].created_at).toUTCString()
     uniqueURLs.forEach(url => {
       const eventsForURL = eventsByURL[url]
       if (eventsForURL != null && eventsForURL.length > 0) {
@@ -169,7 +171,8 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
       }
     })
   }
-  return report
+  const hoursWorked = ((new Date(activity[0].created_at) - new Date(activity[activity.length - 1].created_at)) / 1000 / 60 / 60).toPrecision(2)
+  return `Activity Report for ${username} (covering ${hoursWorked} hours):\n${report}`
 }
 
 async function main (username, howManyHours) {
