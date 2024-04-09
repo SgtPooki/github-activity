@@ -9,7 +9,7 @@
   "type": "module",
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@octokit/core": "^6.0.1",
     "@octokit/plugin-retry": "^7.0.3",
