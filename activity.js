@@ -149,8 +149,8 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
             // No specific URL associated with WatchEvent
           }
           if (eventDetails !== '') {
-            const eventTime = new Date(event.created_at).toUTCString()
-            newEvents.push(`- ${eventTime}: ${eventDetails} \n`)
+            // const eventTime = new Date(event.created_at).toUTCString()
+            newEvents.push(`- ${eventDetails} \n`)
           }
         })
         // check newEvents for duplicate URLS in the newEvents string and remove duplicates and add a count
@@ -166,7 +166,7 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
 
         if (filteredNewEvents.length > 0) {
           report += `Activities for ${url}:\n`
-          report += filteredNewEvents.join('')
+          report += filteredNewEvents.join('') + '\n'
         }
       }
     })
