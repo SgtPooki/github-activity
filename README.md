@@ -3,6 +3,8 @@
 
 pull the code down for now
 
+be sure to change your username in `activity.js`
+
 ## How to run
 
 `node activity.js <hoursToGetEventsFor>`
