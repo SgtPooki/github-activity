@@ -134,9 +134,9 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
           const eventType = event.type
           let eventDetails = ''
           if (eventType === 'IssuesEvent' && (event.payload.issue.html_url.split('/issues')[0] === url || event.payload.issue.html_url === url)) {
-            eventDetails = `Issue: ${event.payload.issue.html_url}`
+            eventDetails = `Created Issue: ${event.payload.issue.html_url}`
           } else if (eventType === 'PullRequestEvent' && (event.payload.pull_request.html_url.split('/pull')[0] === url || event.payload.pull_request.html_url === url)) {
-            eventDetails = `Pull Request: ${event.payload.pull_request.html_url}`
+            eventDetails = `Created Pull Request: ${event.payload.pull_request.html_url}`
           } else if (eventType === 'IssueCommentEvent' && event.payload.issue.html_url.split('/pull')[0].split('/issues')[0] === url) {
             eventDetails = `Commented on Issue: ${event.payload.issue.html_url}`
           } else if (eventType === 'PullRequestReviewCommentEvent' && event.payload.comment.html_url === url) {
