@@ -32,10 +32,9 @@ const octokit = new MyOctokit({
 
 
 async function fetchAllUserEventsWithinTimeframe (username, hours) {
-  console.log('fetchAllUserEventsWithinTimeframe')
   // since needs to be in YYYY-MM-DDTHH:MM:SSZ
   const since = new Date(new Date() - hours * 60 * 60 * 1000).toISOString().split('.')[0] + 'Z'
-  console.log('since: ', since)
+
   let events = []
   for await (const response of octokit.paginate.iterator(octokit.rest.activity.listEventsForAuthenticatedUser, {
     username,
@@ -82,7 +81,9 @@ function collectUniqueURLs (activity) {
     } else if (eventType === 'WatchEvent') {
       // No specific URL associated with WatchEvent
     } else {
-      console.log('Unhandled event type:', eventType)
+      if (process.env.DEBUG != null) {
+        console.log('Unhandled event type:', eventType)
+      }
     }
   })
   return Array.from(uniqueURLs)
@@ -113,7 +114,9 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
       } else if (eventType === 'WatchEvent') {
         // No specific URL associated with WatchEvent
       } else {
-        console.log('Unhandled event type:', eventType)
+        if (process.env.DEBUG != null) {
+          console.log('Unhandled event type:', eventType)
+        }
       }
       if (eventURL) {
         if (!eventsByURL[eventURL]) {
@@ -195,5 +198,4 @@ async function main (username, howManyHours) {
 
 const githubUsername = 'sgtpooki'
 const howManyHours = process.argv[2] ?? 24
-console.log('howManyHours:', howManyHours)
 main(githubUsername, howManyHours)
