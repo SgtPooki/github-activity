@@ -1,39 +1,10 @@
-/* eslint-disable no-console */
-import { Octokit } from '@octokit/rest'
-import { retry } from '@octokit/plugin-retry'
-import { throttling } from '@octokit/plugin-throttling'
+import { octokit } from './utils/github.js'
+import { hours as cliHours, user } from './utils/cli.js'
+import { getAuthenticatedUsername } from './utils/user.js'
 
-// @ts-check
-// Create a custom Octokit with retry and throttling plugins
-const MyOctokit = Octokit.plugin(retry, throttling)
-const octokit = new MyOctokit({
-  auth: process.env.GITHUB_TOKEN,
-  throttle: {
-    onRateLimit: (retryAfter, options, octokit) => {
-      octokit.log.warn(`Request quota exhausted for request ${options.method} ${options.url}`);
-      if (options.request.retryCount === 0) { // only retries once
-        console.log(`Retrying after ${retryAfter} seconds!`);
-        return true;
-      }
-    },
-    onSecondaryRateLimit: (retryAfter, options, octokit) => {
-      // does not retry, only logs a warning
-      octokit.log.warn(`Secondary rate limit hit for request ${options.method} ${options.url}`);
-    },
-    onAbuseLimit: (retryAfter, options) => {
-      // does not retry, only logs a warning
-      console.warn(`Abuse detected for request ${options.method} ${options.url}`)
-    }
-  },
-  retry: {
-    doNotRetry: ["429"],
-  },
-});
-
-
-async function fetchAllUserEventsWithinTimeframe (username, hours) {
+async function fetchAllUserEventsWithinTimeframe (username, hours = cliHours) {
   // since needs to be in YYYY-MM-DDTHH:MM:SSZ
-  const since = new Date(new Date() - hours * 60 * 60 * 1000).toISOString().split('.')[0] + 'Z'
+  const since = new Date(new Date() - (hours * 60 * 60 * 1000)).toISOString().split('.')[0] + 'Z'
 
   let events = []
   for await (const response of octokit.paginate.iterator(octokit.rest.activity.listEventsForAuthenticatedUser, {
@@ -48,7 +19,7 @@ async function fetchAllUserEventsWithinTimeframe (username, hours) {
   return events
 }
 
-async function fetchUserActivity (username, hours) {
+async function fetchUserActivity (username, hours = cliHours) {
   try {
     return fetchAllUserEventsWithinTimeframe(username, hours)
   } catch (error) {
@@ -56,7 +27,7 @@ async function fetchUserActivity (username, hours) {
   }
 }
 
-function filterActivityForLastHours (activity, hours) {
+function filterActivityForLastHours (activity, hours = cliHours) {
   const currentTime = new Date()
   const someHoursAgo = currentTime.getTime() - (hours * 60 * 60 * 1000)
   return activity.filter(event => new Date(event.created_at).getTime() > someHoursAgo)
@@ -183,19 +154,29 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
   return `Activity Report for ${username} (covering ${hoursWorked} hours):\n${report}`
 }
 
-async function main (username, howManyHours) {
+async function main (username) {
   try {
-    const activity = await fetchUserActivity(username, howManyHours)
-    const filteredActivity = filterActivityForLastHours(activity, howManyHours)
-    // const filteredActivity = activity
+    const activity = await fetchUserActivity(username)
+    const filteredActivity = filterActivityForLastHours(activity)
     const uniqueURLs = collectUniqueURLs(filteredActivity)
     const report = generateDailyActivityReport(username, filteredActivity, uniqueURLs)
     console.log(report)
   } catch (error) {
-    console.error(error.message)
+    console.error('could not run activity: ', error)
   }
 }
 
-const githubUsername = 'sgtpooki'
-const howManyHours = process.argv[2] ?? 24
-main(githubUsername, howManyHours)
+
+const githubUsername = await new Promise((resolve, reject) => {
+  if (user != null) {
+    resolve(user)
+    return
+  }
+  try {
+    resolve(getAuthenticatedUsername())
+  } catch (error) {
+    reject(error)
+  }
+})
+
+main(githubUsername)
