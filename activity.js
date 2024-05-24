@@ -150,8 +150,13 @@ function generateDailyActivityReport (username, activity, uniqueURLs) {
       }
     })
   }
-  const hoursWorked = ((new Date(activity[0].created_at) - new Date(activity[activity.length - 1].created_at)) / 1000 / 60 / 60).toPrecision(2)
-  return `Activity Report for ${username} (covering ${hoursWorked} hours):\n${report}`
+  let hoursWorkedLabel = ''
+  if (activity[0]?.created_at != null && activity[activity.length - 1]?.created_at != null) {
+    const hoursWorked = ((new Date(activity[0].created_at) - new Date(activity[activity.length - 1].created_at)) / 1000 / 60 / 60).toPrecision(2)
+    hoursWorkedLabel = ` (covering ${hoursWorked} hours)`
+  }
+
+  return `Activity Report for ${username}${hoursWorkedLabel}:\n${report}`
 }
 
 async function main (username) {
